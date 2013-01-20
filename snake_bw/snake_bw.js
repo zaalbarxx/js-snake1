@@ -1,4 +1,4 @@
-window.onload = function(){
+ function Game(){
     
     //define variables
     points = 0,

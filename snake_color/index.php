@@ -5,7 +5,7 @@
         <title>Snake gra</title>
 
         <script src="http://code.jquery.com/jquery-1.9.0.min.js"></script>
-
+        <script src="snake_color.js" type="text/javascript"></script>
     </title>
 </head>
 <body>
@@ -43,6 +43,9 @@
         .color7{
             background-color:#666600;
         }
+        .color10{
+            background-color:white;
+        }
     </style>
     <table id="stage">
 
@@ -53,7 +56,12 @@
     </div>
 
 
-    <script src="snake_color.js" type="text/javascript"></script>
+    <div name="config">
+        <form name="gameconfig">
+            Speed(1-10): <input type="text" name="speed"><br>
+            Level(1-10): <input type="text" name="level"><br>
+            <input type="button" name="start" value="Graj" onclick="Game(this.form)">
+        </form>
 
 </body>
 </html>

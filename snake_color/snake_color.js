@@ -1,24 +1,48 @@
-window.onload = function(){
-    
+function Game(form){
+    document.getElementsByName("start")[0].disabled = true;
     //define variables used in script
-    points = 0,
-    level = 0,
-    direction = 3,
-    snake = new Array(3),
-    active = true,
-    speed = 500;
+    var points = 0;
+    var level = form.level.value;
+    var direction = 3;
+    var snake = new Array(3);
+    var active = true;
+    
+    //define var lastPress which holds time of last button press 
+    var lastPress = new Date().getTime();
+    
+    //define var speed from start game form 
+    var speed = form.speed.value;
+    
+    //checks if speed from input is between 1 and 10
+    if (speed <1 || speed > 10){
+        alert("Musisz wybrać prędkość z zakresu 1 do 10");
+        return;  
+    }
+    
+    //checks if level is correct
+    if(level <1 || level > 10){
+        alert("Musisz wybrać poziom z zakresu 1 do 10");
+        return;
+    }
+    
+    //sets speed of game, for example if speed chosen is 5 then interval between function startGame will be 350, if level is 10 it will be 100
+    speed = 600 - (speed * 50);
+    
+    
+    var diff = speed+1;
     
     //create new array which will 
     var map = new Array(20);
     for (var i = 0; i < map.length; i++) {
         map[i] = new Array(20);
     };
+    
     DrawTable();
     map = Snake(map);
     map = makeFood(map);
-    
+    map = setLevel(map,level);
     //startGame();
-    setInterval(startGame,200);
+    setInterval(startGame,speed);
     
     $(document).keypress(function(event) {
         var position = ({
@@ -28,36 +52,47 @@ window.onload = function(){
         var x = position.x;
         var y = position.y;
         
-        //handle arrow keys and change direction if button is pressed
+        //handle arrow keys and change direction if button is pressed, also if user press buttons too fast his direction wont change so it eliminates bug with 
+        //pressing two buttons too fast so snake just moves to its body
         switch (event.keyCode) {
+            //first we want to see what is delay between two button clicks (diff) then if diff is bigger than game speed / 2 then we change direction and set last button press to current time
             case 37:
                 //left
+                diff = new Date().getTime() - lastPress;
                 event.preventDefault();
-                if (direction !== 3){
+                if (direction !== 3 && diff > (speed/2)){
                     direction = 1;
+                    lastPress = new Date().getTime();
                 } 
                 break;
             case 38:
                 //up
+                diff = new Date().getTime() - lastPress;
                 event.preventDefault();
-                if (direction !== 4){
+                if (direction !== 4 && diff > (speed/2)){
                     direction = 2;
+                    lastPress = new Date().getTime();
                 }
                 break;
                 
             case 39:
                 //right
+                diff = new Date().getTime() - lastPress;
                 event.preventDefault();
-                if (direction !== 1){
+                if (direction !== 1 && diff > (speed/2)){
                     direction = 3;
+                    lastPress = new Date().getTime();
                 }
                 break;
                 
             case 40:
                 //down
+                diff = new Date().getTime() - lastPress;
+                console.log(diff);
                 event.preventDefault();
-                if (direction !== 2){
+                if (direction !== 2 && diff > (speed/2)){
                     direction = 4;
+                    lastPress = new Date().getTime();
                 }
                 break;
                 
@@ -108,6 +143,7 @@ window.onload = function(){
                     CheckBounds();
                     CheckFood(map);
                     BodyHit();
+                    WallHit();
                     //set map[x][y] to 1 so it becomes snake body
                     map[snake[0].x][snake[0].y] = 1;
                 }
@@ -133,6 +169,7 @@ window.onload = function(){
     // draws map array which stores information about food and snake body
     function DrawMap(){
         //remove class from all cells 
+        console.log("REMOVE");
         $('td').removeClass();
         
         //add class color[x] where x is color of cell to all cells[x][y] if map[x][y] has value
@@ -172,13 +209,20 @@ window.onload = function(){
     //checks if head collides with its body and if it does calls function gameOver
     function BodyHit(){
         if(map[snake[0].x][snake[0].y] == 1){
-            console.log("body hit");
             gameOver();
             return;
         }
     
     }
     
+    //just like above, just checks if head hit obstacle
+    function WallHit(){
+        if(map[snake[0].x][snake[0].y] == 10){
+            gameOver();
+            return;
+        }
+    
+    }
     //checks if head encountered food and if it did then grants points and creates new food on random position
     function CheckFood(map){
         if(map[snake[0].x][snake[0].y] > 1){
@@ -190,10 +234,27 @@ window.onload = function(){
                 y: snake[snake.length - 1].y,
                 color: color 
             });
-            console.log(snake[snake.length - 1].color);
             map[snake[snake.length - 1].x][snake[snake.length - 1].y] = 1;    
         }
     };
+    
+    //this function creates random obstacles around map depending on what level is chosen, for example level 1 provides no obstacles while level 10 makes 9 obstacles
+    function setLevel(map,level){
+        var x = Math.round(Math.random()*(map.length-1));
+        var y = Math.round(Math.random()*(map.length-1));
+        if(level > 1){
+            
+            for(i=1;i<level;i++){
+                while(map[x][y] > 0){
+                    x = Math.round(Math.random()*(map.length-1));
+                    y = Math.round(Math.random()*(map.length-1));
+                }
+                map[x][y] = 10
+            }
+        }
+        return map;
+        
+    }
     //creates snake in first three cells in first row
     function Snake(map){
         snake[0] = ({
@@ -222,7 +283,7 @@ window.onload = function(){
         )
            
            
-           //push snake elements to map array
+        //push snake elements to map array
         for(i=0;i<snake.length;i++){
             map[snake[i].x][snake[i].y] = 1;
         }
